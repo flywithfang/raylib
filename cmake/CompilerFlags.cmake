@@ -16,6 +16,11 @@ if (ENABLE_MSAN AND ENABLE_ASAN)
     MESSAGE(WARNING "Compiling with both AddressSanitizer and MemorySanitizer is not recommended")
 endif()
 
+# Ensure MSVC treats source files as UTF-8 to properly parse Unicode literals
+if (MSVC)
+    add_if_flag_compiles("/utf-8" CMAKE_C_FLAGS)
+endif()
+
 if (ENABLE_ASAN)
     
     # If enabled it would generate errors/warnings for all kinds of memory errors

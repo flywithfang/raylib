@@ -19,8 +19,8 @@
 
 // Initialization constants
 //--------------------------------------------------------------------------------------
-const int screenWidth = 800;
-const int screenHeight = 450;
+const int screenWidth = 2400;
+const int screenHeight = 1350;
 const int imageWidth = 800;
 const int imageHeight = 800/2;
 

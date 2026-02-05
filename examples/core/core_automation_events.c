@@ -46,8 +46,8 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+    const int screenWidth = 2400;
+    const int screenHeight = 1350;
 
     InitWindow(screenWidth, screenHeight, "raylib [core] example - automation events");
 

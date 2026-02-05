@@ -55,8 +55,8 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+    const int screenWidth = 2400;
+    const int screenHeight = 1350;
 
     // We have multiple options to implement an Undo/Redo system
     // Probably the most professional one is using the Command pattern to

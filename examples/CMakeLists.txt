@@ -154,6 +154,12 @@ foreach (example_source ${example_sources})
     add_executable(${example_name} ${example_source})
 
     target_link_libraries(${example_name} raylib)
+
+    # Ensure MSVC treats source files as UTF-8 (required for Unicode string literals)
+    if (MSVC)
+        target_compile_options(${example_name} PRIVATE /utf-8)
+    endif()
+
     if (NOT WIN32)
         target_link_libraries(${example_name} m)
     endif()
