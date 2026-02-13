@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.25)
 #this change avoid the warning that appear when we include raylib using Cmake fatch content 
 project(raylib)
 
+# Generate compile_commands.json for clangd and other tools
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Avoid excessive expansion of variables in conditionals. In particular, if
 # "PLATFORM" is "DRM" then:
 #
