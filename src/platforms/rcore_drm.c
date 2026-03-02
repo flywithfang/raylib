@@ -80,7 +80,7 @@
     #include <errno.h>      // Required for: EBUSY, EAGAIN
 
     #define MAX_DRM_CACHED_BUFFERS  3
-#endif // SUPPORT_DRM_CACHE
+#endif
 
 #ifndef EGL_OPENGL_ES3_BIT
     #define EGL_OPENGL_ES3_BIT  0x40
@@ -160,7 +160,7 @@ static FramebufferCache fbCache[MAX_DRM_CACHED_BUFFERS] = { 0 };
 static volatile int fbCacheCount = 0;
 static volatile bool pendingFlip = false;
 static bool crtcSet = false;
-#endif // SUPPORT_DRM_CACHE
+#endif
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition
@@ -253,7 +253,7 @@ static const short linuxToRaylibMap[KEYMAP_SIZE] = {
 int InitPlatform(void);          // Initialize platform (graphics, inputs and more)
 void ClosePlatform(void);        // Close platform
 
-#if defined(SUPPORT_SSH_KEYBOARD_RPI)
+#if SUPPORT_SSH_KEYBOARD_RPI
 static void InitKeyboard(void);                 // Initialize raw keyboard system
 static void RestoreKeyboard(void);              // Restore keyboard system
 static void ProcessKeyboard(void);              // Process keyboard events
@@ -1017,10 +1017,9 @@ double GetTime(void)
 }
 
 // Open URL with default system browser (if available)
-// NOTE: This function is only safe to use if you control the URL given
+// NOTE: This function is only safe to use if the provided URL is safe
 // A user could craft a malicious string performing another action
-// Only call this function yourself not with user input or make sure to check the string yourself
-// REF: https://github.com/raysan5/raylib/issues/686
+// Avoid calling this function with user input non-validated strings
 void OpenURL(const char *url)
 {
     TRACELOG(LOG_WARNING, "OpenURL() not implemented on target platform");
@@ -1066,7 +1065,7 @@ const char *GetKeyName(int key)
 // Register all input events
 void PollInputEvents(void)
 {
-#if defined(SUPPORT_GESTURES_SYSTEM)
+#if SUPPORT_GESTURES_SYSTEM
     // NOTE: Gestures update must be called every frame to reset gestures correctly
     // because ProcessGestureEvent() is just called on an event, not every frame
     UpdateGestures();
@@ -1089,7 +1088,7 @@ void PollInputEvents(void)
 
     PollKeyboardEvents();
 
-#if defined(SUPPORT_SSH_KEYBOARD_RPI)
+#if SUPPORT_SSH_KEYBOARD_RPI
     // NOTE: Keyboard reading could be done using input_event(s) or just read from stdin, both methods are used here
     // stdin reading is still used for legacy purposes, it allows keyboard input trough SSH console
     if (!platform.eventKeyboardMode) ProcessKeyboard();
@@ -1469,7 +1468,7 @@ int InitPlatform(void)
     if (!eglChooseConfig(platform.device, framebufferAttribs, configs, numConfigs, &matchingNumConfigs))
     {
         TRACELOG(LOG_WARNING, "DISPLAY: Failed to choose EGL config: 0x%x", eglGetError());
-        free(configs);
+        RL_FREE(configs);
         return -1;
     }
 
@@ -1614,7 +1613,7 @@ int InitPlatform(void)
     //----------------------------------------------------------------------------
     // Initialize timing system
     //----------------------------------------------------------------------------
-    // NOTE: timming system must be initialized before the input events system
+    // NOTE: timing system must be initialized before the input events system
     InitTimer();
     //----------------------------------------------------------------------------
 
@@ -1622,7 +1621,7 @@ int InitPlatform(void)
     //----------------------------------------------------------------------------
     InitEvdevInput();   // Evdev inputs initialization
 
-#if defined(SUPPORT_SSH_KEYBOARD_RPI)
+#if SUPPORT_SSH_KEYBOARD_RPI
     InitKeyboard();     // Keyboard init (stdin)
 #endif
     //----------------------------------------------------------------------------
@@ -1742,7 +1741,7 @@ void ClosePlatform(void)
     }
 }
 
-#if defined(SUPPORT_SSH_KEYBOARD_RPI)
+#if SUPPORT_SSH_KEYBOARD_RPI
 // Initialize Keyboard system (using standard input)
 static void InitKeyboard(void)
 {
@@ -1901,7 +1900,7 @@ static void ProcessKeyboard(void)
         }
     }
 }
-#endif  // SUPPORT_SSH_KEYBOARD_RPI
+#endif // SUPPORT_SSH_KEYBOARD_RPI
 
 // Initialize user input from evdev(/dev/input/event<N>)
 // this means mouse, keyboard or gamepad devices
@@ -2149,14 +2148,11 @@ static void ConfigureEvdevDevice(char *device)
 
         if (absAxisCount > 0)
         {
-            // TODO / NOTE
+            // TODO: Review GamepadAxis enum matching
             // So gamepad axes (as in the actual linux joydev.c) are just simply enumerated
             // and (at least for some input drivers like xpat) it's convention to use
-            // ABS_X, ABX_Y for one joystick ABS_RX, ABS_RY for the other and the Z axes for the
-            // shoulder buttons
-            // If these are now enumerated you get LJOY_X, LJOY_Y, LEFT_SHOULDERB, RJOY_X, ...
-            // That means they don't match the GamepadAxis enum
-            // This could be fixed
+            // ABS_X, ABX_Y for one joystick ABS_RX, ABS_RY for the other and the Z axes for the shoulder buttons
+            // If these are now enumerated, it results to LJOY_X, LJOY_Y, LEFT_SHOULDERB, RJOY_X, ...
             int axisIndex = 0;
             for (int axis = ABS_X; axis < ABS_PRESSURE; axis++)
             {
@@ -2200,7 +2196,7 @@ static void PollKeyboardEvents(void)
         // Check if the event is a key event
         if (event.type != EV_KEY) continue;
 
-#if defined(SUPPORT_SSH_KEYBOARD_RPI)
+#if SUPPORT_SSH_KEYBOARD_RPI
         // If the event was a key, we know a working keyboard is connected, so disable the SSH keyboard
         platform.eventKeyboardMode = true;
 #endif
@@ -2556,7 +2552,7 @@ static void PollMouseEvents(void)
             CORE.Input.Touch.pointId[i] = -1;
         }
 
-#if defined(SUPPORT_GESTURES_SYSTEM)
+#if SUPPORT_GESTURES_SYSTEM
         if (touchAction > -1)
         {
             GestureEvent gestureEvent = { 0 };

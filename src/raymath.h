@@ -30,7 +30,7 @@
 *       #define RAYMATH_DISABLE_CPP_OPERATORS
 *           Disables C++ operator overloads for raymath types.
 *
-*       #define RAYMATH_USE_SIMD_INTRINSICS
+*       #define RAYMATH_USE_SIMD_INTRINSICS   1
 *           Try to enable SIMD intrinsics for MatrixMultiply()
 *           Note that users enabling it must be aware of the target platform where application will
 *           run to support the selected SIMD intrinsic, for now, only SSE is supported
@@ -164,17 +164,23 @@ typedef struct Matrix {
 #endif
 
 // NOTE: Helper types to be used instead of array return types for *ToFloat functions
+#if !defined(RL_FLOAT3_TYPE)
 typedef struct float3 {
     float v[3];
 } float3;
+#define RL_FLOAT3_TYPE
+#endif
 
+#if !defined(RL_FLOAT16_TYPE)
 typedef struct float16 {
     float v[16];
 } float16;
+#define RL_FLOAT16_TYPE
+#endif
 
 #include <math.h>       // Required for: sinf(), cosf(), tan(), atan2f(), sqrtf(), floor(), fminf(), fmaxf(), fabsf()
 
-#if defined(RAYMATH_USE_SIMD_INTRINSICS)
+#if RAYMATH_USE_SIMD_INTRINSICS
     // SIMD is used on the most costly raymath function MatrixMultiply()
     // NOTE: Only SSE intrinsics support implemented
     // TODO: Consider support for other SIMD instrinsics:
@@ -2702,7 +2708,7 @@ RMAPI void MatrixDecompose(Matrix mat, Vector3 *translation, Quaternion *rotatio
         stabilizer = fmaxf(stabilizer, fabsf(matColumns[i].x));
         stabilizer = fmaxf(stabilizer, fabsf(matColumns[i].y));
         stabilizer = fmaxf(stabilizer, fabsf(matColumns[i].z));
-    };
+    }
     matColumns[0] = Vector3Scale(matColumns[0], 1.0f / stabilizer);
     matColumns[1] = Vector3Scale(matColumns[1], 1.0f / stabilizer);
     matColumns[2] = Vector3Scale(matColumns[2], 1.0f / stabilizer);
@@ -3106,6 +3112,6 @@ inline const Matrix& operator *= (Matrix& lhs, const Matrix& rhs)
     return lhs;
 }
 //-------------------------------------------------------------------------------
-#endif  // C++ operators
+#endif // C++ operators
 
-#endif  // RAYMATH_H
+#endif // RAYMATH_H
